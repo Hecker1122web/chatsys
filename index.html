@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Real Users Chat - Liquid Glass Style</title>
+
+  <!-- Poppins font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --glass-bg: rgba(255 255 255 / 0.35);
+      --blur: blur(20px);
+      --border: rgba(255 255 255 / 0.3);
+      --font: 'Poppins', sans-serif;
+      --blue: #007aff;
+      --blue-light: rgba(0, 122, 255, 0.15);
+      --bubble-radius: 22px;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font);
+    }
+
+    body {
+      background: linear-gradient(135deg, #f2f7ff, #ffffff);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .glass-navbar {
+      backdrop-filter: var(--blur);
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      text-align: center;
+      border-radius: 0 0 25px 25px;
+      box-shadow: var(--shadow);
+      z-index: 10;
+    }
+
+    .main-layout {
+      display: flex;
+      height: calc(100vh - 70px);
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .user-list {
+      width: 220px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      border-radius: 20px;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+      padding: 10px;
+    }
+
+    .user {
+      padding: 0.8rem 1rem;
+      border-radius: var(--bubble-radius);
+      margin-bottom: 10px;
+      background: transparent;
+      cursor: pointer;
+      transition: 0.3s ease;
+      user-select: none;
+    }
+
+    .user:hover,
+    .user.selected {
+      background: var(--blue-light);
+    }
+
+    .chat-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      border-radius: 25px;
+      padding: 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .chat-header {
+      padding: 1rem;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-window {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .chat-bubble {
+      padding: 0.8rem 1rem;
+      border-radius: var(--bubble-radius);
+      max-width: 80%;
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.3s ease;
+      word-break: break-word;
+    }
+
+    .chat-bubble.you {
+      align-self: flex-end;
+      background: var(--blue-light);
+      color: #000;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .chat-input button {
+      padding: 0.8rem 1.5rem;
+      border-radius: 999px;
+      border: none;
+      background: var(--blue);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: all 0.2s ease;
+    }
+
+    .chat-input button:active {
+      transform: scale(0.96);
+      background: #005dd1;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-layout {
+        flex-direction: column;
+      }
+
+      .user-list {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 0 0 25px 25px;
+      }
+
+      .user {
+        flex: 1;
+        text-align: center;
+        border-radius: 15px;
+        min-width: 120px;
+        margin-bottom: 0;
+      }
+    }
+
+    /* Auth modal overlay */
+    #authModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #authBox {
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      padding: 2rem 3rem;
+      border-radius: 25px;
+      box-shadow: var(--shadow);
+      width: 320px;
+      max-width: 90vw;
+      color: #000;
+    }
+
+    #authBox h2 {
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    #authBox input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      margin-bottom: 1rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      outline: none;
+      font-size: 1rem;
+    }
+
+    #authBox button {
+      width: 100%;
+      padding: 0.8rem 0;
+      border-radius: 999px;
+      border: none;
+      background: var(--blue);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    #authBox button:active {
+      background: #005dd1;
+    }
+
+    #logoutBtn {
+      background: #ff3b30 !important;
+      border-radius: 20px;
+      padding: 0.4rem 1rem;
+      cursor: pointer;
+      border: none;
+      color: white;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    #logoutBtn:hover {
+      background: #cc3226 !important;
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+</head>
+
+<body>
+
+  <nav class="glass-navbar">
+    <h1>ChatApp</h1>
+    <button id="logoutBtn" style="display:none;" onclick="logOut()">Log Out</button>
+  </nav>
+
+  <div class="main-layout">
+    <aside class="user-list" id="userList">
+      <!-- Real users list loads here -->
+    </aside>
+
+    <section class="chat-section">
+      <div class="chat-header" id="chatHeader">Select a user to chat</div>
+
+      <div class="chat-window" id="chatWindow"></div>
+
+      <div class="chat-input">
+        <input type="text" id="messageInput" placeholder="Say something..." autocomplete="off" />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Auth Modal -->
+  <div id="authModal">
+    <div id="authBox">
+      <h2>Welcome! Please Login or Sign Up</h2>
+      <input type="email" id="email" placeholder="Email" autocomplete="username" />
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
+      <button onclick="signUp()">Sign Up</button>
+      <button onclick="logIn()">Log In</button>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      // Your Firebase config here
+      const firebaseConfig = {
+        apiKey: "AIzaSyAlJQrKNdP1U2ou8lczrnJYz-4w7B1h-Yw",
+        authDomain: "chatsys-b96e7.firebaseapp.com",
+        projectId: "chatsys-b96e7",
+        storageBucket: "chatsys-b96e7.firebasestorage.app",
+        messagingSenderId: "730596079521",
+        appId: "1:730596079521:web:374115dfa380da50defde0"
+      };
+
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.database();
+
+      let currentUser = null;
+      let chattingWith = null;
+
+      const userListEl = document.getElementById('userList');
+      const chatHeaderEl = document.getElementById('chatHeader');
+      const chatWindowEl = document.getElementById('chatWindow');
+      const messageInput = document.getElementById('messageInput');
+      const authModal = document.getElementById('authModal');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      // Auth state listener
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          currentUser = user.email;
+          authModal.style.display = 'none';
+          logoutBtn.style.display = 'inline-block';
+          loadUserList();
+          chatHeaderEl.innerText = 'Select a user to chat';
+          chatWindowEl.innerHTML = '';
+          chattingWith = null;
+        } else {
+          currentUser = null;
+          authModal.style.display = 'flex';
+          logoutBtn.style.display = 'none';
+          userListEl.innerHTML = '';
+          chatHeaderEl.innerText = 'Select a user to chat';
+          chatWindowEl.innerHTML = '';
+          chattingWith = null;
+        }
+      });
+
+      // On signup add user to /users in database
+      window.signUp = function () {
+        const email = document.getElementById('email').value.trim();
+        const pass = document.getElementById('password').value.trim();
+        if (!email || !pass) return alert('Email and password are required!');
+        auth.createUserWithEmailAndPassword(email, pass)
+          .then(userCredential => {
+            const user = userCredential.user;
+            // Add user info to /users (replace '.' to ',' for keys)
+            const safeEmailKey = user.email.replace(/\./g, ',');
+            db.ref('users/' + safeEmailKey).set({
+              email: user.email,
+              createdAt: Date.now()
+            });
+          })
+          .catch(e => alert('Sign Up Error: ' + e.message));
+      };
+
+      // Login function
+      window.logIn = function () {
+        const email = document.getElementById('email').value.trim();
+        const pass = document.getElementById('password').value.trim();
+        if (!email || !pass) return alert('Email and password are required!');
+        auth.signInWithEmailAndPassword(email, pass)
+          .catch(e => alert('Login Error: ' + e.message));
+      };
+
+      // Logout
+      window.logOut = function () {
+        auth.signOut();
+      };
+
+      // Load user list from /users, exclude current user
+      function loadUserList() {
+        db.ref('users').once('value').then(snapshot => {
+          const usersObj = snapshot.val() || {};
+          userListEl.innerHTML = '';
+          Object.values(usersObj).forEach(userData => {
+            if (userData.email === currentUser) return; // skip self
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user';
+            userDiv.innerText = userData.email.split('@')[0];
+            userDiv.title = userData.email; // full email tooltip
+            userDiv.onclick = () => selectUser(userData.email);
+            userListEl.appendChild(userDiv);
+          });
+        });
+      }
+
+      // Select user to chat with
+      function selectUser(userEmail) {
+        chattingWith = userEmail;
+        chatHeaderEl.innerText = `Chatting with ${userEmail.split('@')[0]}`;
+        [...userListEl.children].forEach(el => {
+          el.classList.toggle('selected', el.title === userEmail);
+        });
+        loadMessages();
+      }
+
+      // Send message to selected user
+      window.sendMessage = function () {
+        const text = messageInput.value.trim();
+        if (!text || !chattingWith) return;
+        const msg = {
+          text,
+          sender: currentUser,
+          timestamp: Date.now()
+        };
+        const roomId = getRoomId(currentUser, chattingWith);
+        db.ref('chats/' + roomId).push(msg);
+        messageInput.value = '';
+      };
+
+      // Load messages for current chat room
+      function loadMessages() {
+        if (!chattingWith) return;
+        const roomId = getRoomId(currentUser, chattingWith);
+
+        db.ref('chats/' + roomId).off(); // clear old listener
+
+        db.ref('chats/' + roomId).on('value', snapshot => {
+          chatWindowEl.innerHTML = '';
+          snapshot.forEach(child => {
+            const msg = child.val();
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble';
+            if (msg.sender === currentUser) bubble.classList.add('you');
+            bubble.innerText = msg.text;
+            chatWindowEl.appendChild(bubble);
+          });
+          chatWindowEl.scrollTop = chatWindowEl.scrollHeight;
+        });
+      }
+
+      // Get consistent room id by sorting emails
+      function getRoomId(user1, user2) {
+        return [user1.toLowerCase(), user2.toLowerCase()].sort().join('_');
+      }
+    })();
+  </script>
+
+</body>
+
+</html>
