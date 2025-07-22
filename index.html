@@ -323,6 +323,16 @@
         appId: "1:730596079521:web:374115dfa380da50defde0"
       };
 
+      const user = firebase.auth().currentUser;
+      if (user) {
+        firebase.database().ref("users/" + user.uid).set({
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || "Anonymous",
+          lastSeen: new Date().toISOString()
+        });
+      }
+
       // Initialize Firebase
       firebase.initializeApp(firebaseConfig);
       const auth = firebase.auth();
@@ -405,6 +415,24 @@
             userDiv.onclick = () => selectUser(userData.email);
             userListEl.appendChild(userDiv);
           });
+        });
+      }
+
+      function showAllUsers() {
+        const currentUser = firebase.auth().currentUser;
+        firebase.database().ref("users").on("value", snapshot => {
+          const users = snapshot.val();
+          const userListDiv = document.getElementById("userList");
+          userListDiv.innerHTML = "";
+          for (let uid in users) {
+            if (uid !== currentUser.uid) {
+              const userDiv = document.createElement("div");
+              userDiv.textContent = users[uid].email || users[uid].name;
+              userDiv.className = "user";
+              userDiv.onclick = () => selectUserToChat(uid);
+              userListDiv.appendChild(userDiv);
+            }
+          }
         });
       }
 
